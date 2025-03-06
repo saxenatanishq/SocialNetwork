@@ -1,0 +1,72 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+{% if user.is_authenticated %}
+<div id="New_Post">
+    <div id="new_post">
+        <h3>New Post</h3>
+        <form action="{% url 'index' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="creator" required id="id_creator" value="{{request.user}}">
+            <div class="input-group">
+                <textarea class="form-control" aria-label="With textarea" name="body" required id="id_body" placeholder="What's on your mind?"></textarea>
+            </div>
+            <button type="submit" class="btn btn-outline-primary" id="newpostbutton">Post</button>
+        </form>
+    </div>
+</div>
+
+<br>
+<div id="All_Posts">
+    <h3>All Posts</h3>
+    {% for thread in page_obj %}
+    <div class="card thread_card" id="{{thread.id}}">
+        <a href="/profile/{{thread.creator.username}}">{{thread.creator}}</a>
+        <div class="thread_body" id="thread_body_{{thread.id}}">{{thread.body}}</div>
+        <div class="hidden_thread_part" id="hidden_thread_part_{{thread.id}}" style="display: none;">
+            <textarea class="thread_textarea" id="thread_textarea_{{thread.id}}">{{thread.body}}</textarea>
+            <button type="button" class="btn btn-outline-primary thread_edit_submit_button" id="submit_{{thread.id}}">Submit</button>
+        </div>
+        <div class="thread_timestamp">{{thread.timestamp}}</div>
+        {% load static %}
+        <span class="button-container">
+            <button class="like_button" id="like_button_{{thread.id}}">
+                {% if request.user in thread.likes %}
+                <img src="{% static 'network/dislike.png' %}" alt="like" id="like_pic">
+                {% else %}
+                <img src="{% static 'network/like.png' %}" alt="like" id="like_pic">
+                {% endif %}
+            </button>
+            <div class="like_count" id="like_count_{{thread.id}}">
+                {{ thread.like_count }}
+            </div>
+            {% if request.user == thread.creator %}
+            <button type="button" class="edit_button btn btn-outline-primary" id="edit_{{thread.id}}">Edit Thread</button>
+            {% endif %}
+        </span>
+    </div>
+    {% endfor %}
+</div>
+<div class="pagination">
+    <span class="step-links">
+        {% if page_obj.has_previous %}
+            <a href="?page=1">&laquo; first</a>
+            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+        {% endif %}
+    </span>
+</div>
+{% else %}
+<div class="logout_pages">
+    <h6><a href="{% url 'login' %}">Log In</a> to see all posts</h6>
+</div>
+{% endif %}
+{% endblock %}
